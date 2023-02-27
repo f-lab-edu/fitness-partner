@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    default: local
+    group:
+      local:
+        - local # 로컬환경
+      dev:
+        - dev   # 개발환경
+      pord:
+        - prod  # 배포환경
