@@ -41,3 +41,5 @@ out/
 application-dev.yml
 application-prod.yml
 application-local.yml
+
+/src/test/resources/application.yml

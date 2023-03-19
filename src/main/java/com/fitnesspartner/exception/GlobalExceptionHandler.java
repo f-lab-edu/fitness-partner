@@ -1,27 +1,37 @@
 package com.fitnesspartner.exception;
 
 import com.fitnesspartner.dto.common.ExceptionResponseDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RestApiException.class)
     protected ResponseEntity<ExceptionResponseDto> handleCustomRestApiException(RestApiException ex) {
-        ServerExceptionCode serverExceptionCode = ex.getServerExceptionCode();
+        ErrorCode errorCode = ex.getErrorCode();
 
         return ResponseEntity
-                .status(serverExceptionCode.getHttpStatus())
+                .status(errorCode.getHttpStatus())
                 .body(ExceptionResponseDto.builder()
                         .occurredTime(LocalDateTime.now())
-                        .code(serverExceptionCode.getCode())
-                        .message(serverExceptionCode.getMessage())
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
                         .build()
                 );
     }
@@ -92,6 +102,49 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(ExceptionResponseDto.builder()
                         .occurredTime(LocalDateTime.now())
                         .code(classCastException.getCode())
+                        .message(ex.getMessage())
+                        .build()
+                );
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatus status,
+                                                                  WebRequest request) {
+        BindingResult bindingResult = ex.getBindingResult();
+        List<FieldError> fieldErrorList = bindingResult.getFieldErrors();
+
+        StringBuilder sb = new StringBuilder();
+        for(FieldError fieldError : fieldErrorList) {
+            sb.append("{ [");
+            sb.append(fieldError.getField());
+            sb.append("](은)는 ");
+            sb.append(fieldError.getDefaultMessage());
+            sb.append(" } ");
+        }
+
+        return ResponseEntity
+                .status(status)
+                .body(ExceptionResponseDto.builder()
+                        .occurredTime(LocalDateTime.now())
+                        .code(status.value())
+                        .message(sb.toString())
+                        .build()
+                );
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex,
+                                                        HttpHeaders headers,
+                                                        HttpStatus status,
+                                                        WebRequest request) {
+
+        return ResponseEntity
+                .status(status)
+                .body(ExceptionResponseDto.builder()
+                        .occurredTime(LocalDateTime.now())
+                        .code(status.value())
                         .message(ex.getMessage())
                         .build()
                 );
