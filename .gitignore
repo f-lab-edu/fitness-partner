@@ -40,3 +40,6 @@ out/
 ## 설정제외파일 ##
 application-dev.yml
 application-prod.yml
+application-local.yml
+
+/src/test/resources/application.yml
