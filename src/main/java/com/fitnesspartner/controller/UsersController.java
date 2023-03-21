@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UsersController {
 
@@ -24,7 +24,6 @@ public class UsersController {
                 .body(usersService.userSignup(userSignupRequestDto));
     }
 
-    // TODO: 2023-03-19  : Spring Security와 JWT로 유저 로그인 기능 구현
     @PostMapping("/login")
     public ResponseEntity<UserResponseDto> userLogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
         return ResponseEntity.ok()
@@ -37,7 +36,6 @@ public class UsersController {
                 .body(usersService.userInfo(username));
     }
 
-    // TODO: 2023-03-19  : QueryDSL 적용 후 동적 쿼리로 유저 정보 수정
     @PutMapping("{username}")
     public ResponseEntity<UserResponseDto> userInfoUpdate(@PathVariable String username,
                                                           @Valid @RequestBody UserUpdateRequestDto userUpdateRequestDto) {

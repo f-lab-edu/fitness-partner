@@ -1,5 +1,7 @@
 package com.fitnesspartner.service;
 
+import com.fitnesspartner.constants.Gender;
+import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.domain.Users;
 import com.fitnesspartner.dto.users.UserDisableRequestDto;
 import com.fitnesspartner.dto.users.UserResponseDto;
@@ -31,57 +33,46 @@ class UsersServiceTest {
     @Autowired
     Encryptor encryptor;
 
-
-    @Test
-    @DisplayName("유저 회원가입")
-    void 유저_회원가입() {
-        // given
-        UserSignupRequestDto userSignupRequestDto = new UserSignupRequestDto(
-                "nahealth",
-                "김계란",
-                "나헬린",
-                "12345678",
-                "nahealth123@Naver.com",
-                "01088889999",
-                0
-        );
-        usersService.userSignup(userSignupRequestDto);
-
-        // when
-        Users foundUsers = usersRepository.findByUsernameAndEnabled(userSignupRequestDto.getUsername(), true).get();
-
-        // then
-        assertEquals(foundUsers.getUsername(), userSignupRequestDto.getUsername());
-        assertEquals(foundUsers.getName(), userSignupRequestDto.getName());
-        assertEquals(foundUsers.getNickname(), userSignupRequestDto.getNickname());
-        assertEquals(foundUsers.getGender(), userSignupRequestDto.getGender());
-        assertEquals(foundUsers.getPhoneNumber(), userSignupRequestDto.getPhoneNumber());
-        assertEquals(foundUsers.getEmail(), userSignupRequestDto.getEmail());
-    }
-
     @Nested
-    @DisplayName("테스트2")
-    class 테스트2 {
+    @DisplayName("서비스레이어 성공케이스")
+    class 성공케이스 {
         private String username = "nahealth";
         private String password =  "12345678";
+        private UserSignupRequestDto userSignupRequestDto;
 
         @BeforeEach
         void BeforeEach() {
-            usersRepository.save(
-                    Users.builder()
-                            .username(username)
-                            .name("김계란")
-                            .nickname("나헬린")
-                            .password(encryptor.hashPassword(password))
-                            .gender(0)
-                            .email("nahealth123@Naver.com")
-                            .phoneNumber("01088889999")
-                            .enabled(true)
-                            .build()
+            userSignupRequestDto = new UserSignupRequestDto(
+                    username,
+                    "김계란",
+                    "나헬린",
+                    password,
+                    "nahealth123@Naver.com",
+                    "01088889999",
+                    Gender.MALE
             );
+
+            usersService.userSignup(userSignupRequestDto);
         }
 
         @Test
+        @DisplayName("유저 회원가입")
+        void 유저_회원가입() {
+            // when
+            Users foundUsers = usersRepository.findByUsernameAndUserState(userSignupRequestDto.getUsername(), UserState.Enabled).get();
+
+            // then
+            assertEquals(foundUsers.getUsername(), userSignupRequestDto.getUsername());
+            assertEquals(foundUsers.getName(), userSignupRequestDto.getName());
+            assertEquals(foundUsers.getNickname(), userSignupRequestDto.getNickname());
+            assertEquals(foundUsers.getGender(), userSignupRequestDto.getGender());
+            assertEquals(foundUsers.getPhoneNumber(), userSignupRequestDto.getPhoneNumber());
+            assertEquals(foundUsers.getEmail(), userSignupRequestDto.getEmail());
+        }
+
+
+        @Test
+        @DisplayName("유저 비활성화")
         void 유저_비활성화() {
             // given
             String password = "12345678";
@@ -92,13 +83,14 @@ class UsersServiceTest {
 
             // when
             usersService.userDisable(userDisableRequestDto);
-            Users foundUser = usersRepository.findByUsernameAndEnabled(username, false).get();
+            Users foundUser = usersRepository.findByUsernameAndUserState(username, UserState.Enabled).get();
 
             // then
-            assertEquals(foundUser.isEnabled(), false);
+            assertEquals(foundUser.getUserState(), UserState.Disabled);
         }
 
         @Test
+        @DisplayName("유저 정보조회")
         void 유저_정보조회() {
             // when
             UserResponseDto userResponseDto = usersService.userInfo(username);
@@ -108,6 +100,7 @@ class UsersServiceTest {
         }
 
         @Test
+        @DisplayName("유저 정보수정")
         void 유저_정보수정() {
             // given
             UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
@@ -117,7 +110,7 @@ class UsersServiceTest {
                     "123456789",
                     "nahealth124@daum.net",
                     "010222233333",
-                    0
+                    Gender.MALE
             );
 
             // when

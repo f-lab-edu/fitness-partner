@@ -1,6 +1,8 @@
 package com.fitnesspartner.dto.users;
 
+import com.fitnesspartner.constants.Gender;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +10,7 @@ import javax.validation.constraints.*;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 public class UserUpdateRequestDto {
 
@@ -23,13 +26,11 @@ public class UserUpdateRequestDto {
     @Size(min = 8, max = 15)
     private String password;
 
-    @Email
+    @Email(message = "이메일 포맷이 맞지 않습니다.")
     private String email;
 
-    @Pattern(regexp = "[0-9]{10,11}", message = "10~11자리의 숫자만 입력가능합니다")
+    @Pattern(regexp = "^(01[016789]{1})[0-9]{3,4}[0-9]{4}$", message = "전화번호 포맷에 맞게 입력해주세요.")
     private String phoneNumber;
 
-    @Min(value = 0, message = "0(남자) 혹은 1(여자)의 정수를 입력해주세요")
-    @Max(value = 1, message = "0(남자) 혹은 1(여자)의 정수를 입력해주세요")
-    private Integer gender;
+    private Gender gender;
 }

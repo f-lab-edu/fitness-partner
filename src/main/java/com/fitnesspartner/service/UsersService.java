@@ -1,5 +1,6 @@
 package com.fitnesspartner.service;
 
+import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.domain.Users;
 import com.fitnesspartner.dto.users.*;
 import com.fitnesspartner.exception.ClientExceptionCode;
@@ -38,7 +39,7 @@ public class UsersService {
                 .phoneNumber(userSignupRequestDto.getPhoneNumber())
                 .email(userSignupRequestDto.getEmail())
                 .gender(userSignupRequestDto.getGender())
-                .enabled(true)
+                .userState(UserState.Enabled)
                 .build();
         usersRepository.save(users);
         return "회원가입 성공";
@@ -59,7 +60,7 @@ public class UsersService {
                 .gender(users.getGender())
                 .phoneNumber(users.getPhoneNumber())
                 .nickname(users.getNickname())
-                .enabled(users.isEnabled())
+                .userState(users.getUserState())
                 .build();
     }
 
@@ -100,7 +101,7 @@ public class UsersService {
             throw new RestApiException(ClientExceptionCode.PASSWORD_NOT_MATCH);
         }
 
-        foundUsers.userDisable(false);
+        foundUsers.userDisable(UserState.Disabled);
 
         return "비활성화 완료";
     }
@@ -118,7 +119,7 @@ public class UsersService {
     }
 
     private Users findUserByUsernameIfExist(String username) {
-        return usersRepository.findByUsernameAndEnabled(username, true)
+        return usersRepository.findByUsernameAndUserState(username, UserState.Enabled)
                 .orElseThrow(
                         () -> new RestApiException(ClientExceptionCode.CANT_FIND_USER)
                 );

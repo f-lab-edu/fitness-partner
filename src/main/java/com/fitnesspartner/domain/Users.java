@@ -1,5 +1,7 @@
 package com.fitnesspartner.domain;
 
+import com.fitnesspartner.constants.Gender;
+import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.dto.users.UserUpdateRequestDto;
 import com.fitnesspartner.utils.TimeStamped;
 import lombok.AllArgsConstructor;
@@ -35,7 +37,8 @@ public class Users extends TimeStamped {
     private String email;
 
     @Column(nullable = false)
-    private int gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column(nullable = false)
     private String phoneNumber;
@@ -44,7 +47,7 @@ public class Users extends TimeStamped {
     private String nickname;
 
     @Column(nullable = false)
-    private boolean enabled;
+    private UserState userState;
 
 
     public void updateUser(UserUpdateRequestDto userUpdateRequestDto) {
@@ -73,7 +76,7 @@ public class Users extends TimeStamped {
         }
     }
 
-    public void userDisable(boolean enabled) {
-        this.enabled = enabled;
+    public void userDisable(UserState userState) {
+        this.userState = userState;
     }
 }

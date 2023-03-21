@@ -1,11 +1,14 @@
 package com.fitnesspartner.dto.users;
 
+import com.fitnesspartner.constants.Gender;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.*;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class UserSignupRequestDto {
 
@@ -25,16 +28,14 @@ public class UserSignupRequestDto {
     @NotBlank(message = "패스워드를 입력해주세요.")
     private String password;
 
-    @Email
+    @Email(message = "이메일 포맷이 맞지 않습니다.")
     @NotBlank(message = "이메일을 입력해주세요.")
     private String email;
 
     @NotBlank(message = "전화번호를 작성해주세요.")
-    @Pattern(regexp = "[0-9]{10,11}", message = "10~11자리의 숫자만 입력가능합니다")
+    @Pattern(regexp = "^(01[016789]{1})[0-9]{3,4}[0-9]{4}$", message = "전화번호 포맷에 맞게 입력해주세요.")
     private String phoneNumber;
 
-    @NotNull(message="0(남자) 혹은 1(여자)의 정수를 입력해주세요")
-    @Min(value = 0, message = "0(남자) 혹은 1(여자)의 정수를 입력해주세요")
-    @Max(value = 1, message = "0(남자) 혹은 1(여자)의 정수를 입력해주세요")
-    private Integer gender;
+    @NotNull(message = "성별을 입력해주세요.")
+    private Gender gender;
 }
