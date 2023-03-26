@@ -1,11 +1,13 @@
 package com.fitnesspartner.dto.instructor;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
+@AllArgsConstructor
 public class InstructorAddressUpdateRequestDto {
 
     @Size(min = 4, max = 15)
