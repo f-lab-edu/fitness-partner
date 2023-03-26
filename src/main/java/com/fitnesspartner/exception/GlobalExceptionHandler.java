@@ -107,6 +107,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 );
     }
 
+
+    @ExceptionHandler(RuntimeException.class)
+    protected ResponseEntity<ExceptionResponseDto> handleRuntimeException(RuntimeException ex) {
+        ServerExceptionCode runtimeException = ServerExceptionCode.RUNTIME_EXCEPTION;
+
+        return ResponseEntity
+                .status(runtimeException.getHttpStatus())
+                .body(ExceptionResponseDto.builder()
+                        .occurredTime(LocalDateTime.now())
+                        .code(runtimeException.getCode())
+                        .message(ex.getMessage())
+                        .build()
+                );
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
