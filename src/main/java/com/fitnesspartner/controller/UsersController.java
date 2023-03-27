@@ -3,7 +3,6 @@ package com.fitnesspartner.controller;
 import com.fitnesspartner.dto.users.*;
 import com.fitnesspartner.service.UsersService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +17,7 @@ public class UsersController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> userSignup(@Valid @RequestBody UserSignupRequestDto userSignupRequestDto) {
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
+        return ResponseEntity.ok()
                 .body(usersService.userSignup(userSignupRequestDto));
     }
 

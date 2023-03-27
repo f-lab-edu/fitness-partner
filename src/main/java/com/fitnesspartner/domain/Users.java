@@ -47,6 +47,7 @@ public class Users extends TimeStamped {
     private String nickname;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserState userState;
 
 
