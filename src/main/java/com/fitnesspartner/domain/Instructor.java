@@ -36,9 +36,8 @@ public class Instructor {
     private InstructorState instructorState;
 
     @OneToOne
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "usersId")
     private Users users;
-
 
     public void instructorAddressUpdate(InstructorAddressUpdateRequestDto instructorAddressUpdateRequestDto) {
         this.addressSido = instructorAddressUpdateRequestDto.getAddressSido();
