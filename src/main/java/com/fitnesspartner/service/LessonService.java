@@ -87,10 +87,11 @@ public class LessonService {
 
         timeValidator(starDateTime, endDateTime);
 
+        Lesson lesson = findLessonByLessonId(requestDto.getLessonId());
+
         String lessonName = requestDto.getLessonName();
         lessonNameDuplicateCheck(lessonName);
 
-        Lesson lesson = findLessonByLessonId(requestDto.getLessonId());
         lesson.lessonUpdate(requestDto);
 
         return "레슨 수정을 완료했습니다.";
@@ -143,7 +144,7 @@ public class LessonService {
     private void lessonNameDuplicateCheck(String lessonName) {
         lessonRepository.findByLessonName(lessonName)
                 .ifPresent(
-                        a -> new RestApiException(ClientExceptionCode.LESSON_NAME_ALREADY_EXISTS)
+                        a -> { throw new RestApiException(ClientExceptionCode.LESSON_NAME_ALREADY_EXISTS); }
                 );
     }
 }
