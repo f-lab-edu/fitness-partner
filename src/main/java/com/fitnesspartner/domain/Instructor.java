@@ -35,7 +35,7 @@ public class Instructor {
     @Enumerated(EnumType.STRING)
     private InstructorState instructorState;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "usersId")
     private Users users;
 
