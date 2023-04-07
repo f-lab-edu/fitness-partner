@@ -96,7 +96,7 @@ public class LessonBookingService {
     public LessonBookingGetAllByUserResponseDto lessonBookingGetAllByUser(String username) {
         Users user = findUserByUsername(username);
 
-        List<LessonBooking> lessonBookingList = lessonBookingRepository.findByUsers(user);
+        List<LessonBooking> lessonBookingList = findLessonBookingByUser(user);
 
         List<LessonBookingResponseDto> lessonBookingResponseDtoList = new ArrayList<>();
 
@@ -121,6 +121,14 @@ public class LessonBookingService {
         }
 
         return new LessonBookingGetAllByUserResponseDto(lessonBookingResponseDtoList);
+    }
+
+    private List<LessonBooking> findLessonBookingByUser(Users user) {
+        List<LessonBooking> lessonBookingList = lessonBookingRepository.findByUsers(user);
+        if(lessonBookingList.size() == 0) {
+            throw new RestApiException(ClientExceptionCode.CANT_FIND_LESSON_BOOKING);
+        }
+        return lessonBookingList;
     }
 
 

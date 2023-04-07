@@ -12,6 +12,8 @@ import com.fitnesspartner.dto.lessonBooking.LessonBookingCreateRequestDto;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingGetAllByUserResponseDto;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingRemoveRequestDto;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingResponseDto;
+import com.fitnesspartner.exception.ClientExceptionCode;
+import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.InstructorRepository;
 import com.fitnesspartner.repository.LessonBookingRepository;
 import com.fitnesspartner.repository.LessonRepository;
@@ -22,12 +24,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest
@@ -200,7 +203,72 @@ class LessonBookingServiceTest {
     @Nested
     class 실패케이스 {
 
+        @Test
+        @DisplayName("중복 예약")
+        void 실패케이스1() {
+            // given
+            LessonBookingCreateRequestDto requestDto = new LessonBookingCreateRequestDto(
+                    lesson.getLessonId(),
+                    studentUsers.getUsername()
+            );
+            lessonBookingService.lessonBookingCreate(requestDto);
+
+            // when
+            RestApiException exception = assertThrows(RestApiException.class,
+                    () -> lessonBookingService.lessonBookingCreate(requestDto)
+            );
+
+            // then
+            assertEquals(ClientExceptionCode.ALREADY_BOOKED_LESSON, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("취소(삭제)할 레슨 예약이 없음")
+        void 실패케이스2() {
+            // given
+            LessonBookingRemoveRequestDto requestDto = new LessonBookingRemoveRequestDto(
+                    lesson.getLessonId(),
+                    9999L,
+                    studentUsers.getUsername()
+            );
+
+            // when
+            RestApiException exception = assertThrows(RestApiException.class,
+                    () -> lessonBookingService.lessonBookingRemove(requestDto)
+            );
+
+            // then
+            assertEquals(ClientExceptionCode.CANT_FIND_LESSON_BOOKING, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("없는 레슨 예약 조회")
+        void 실패케이스3() {
+            // given
+            Long fakeLessonBookingId = 9999L;
+
+            // when
+            RestApiException exception = assertThrows(RestApiException.class,
+                    () -> lessonBookingService.lessonBookingInfo(fakeLessonBookingId)
+            );
+
+            // then
+            assertEquals(ClientExceptionCode.CANT_FIND_LESSON_BOOKING, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("조회할 유저의 레슨 예약들이 없음")
+        void 실패케이스4() {
+            // given
+            String username = studentUsers.getUsername();
+
+            // when
+            RestApiException exception = assertThrows(RestApiException.class,
+                    () -> lessonBookingService.lessonBookingGetAllByUser(username)
+            );
+
+            // then
+            assertEquals(ClientExceptionCode.CANT_FIND_LESSON_BOOKING, exception.getErrorCode());
+        }
     }
-
-
 }
