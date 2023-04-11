@@ -45,6 +45,20 @@ dependencies {
 
 	// H2 DB
 	runtimeOnly 'com.h2database:h2'
+
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// JWT
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
+	// Guava
+	implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+
+	// Jackson Datatype
+	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.14.2'
 }
 
 tasks.named('test') {

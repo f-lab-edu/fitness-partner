@@ -2,13 +2,16 @@ package com.fitnesspartner.service;
 
 import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.domain.Users;
-import com.fitnesspartner.dto.users.*;
+import com.fitnesspartner.dto.users.UserDisableRequestDto;
+import com.fitnesspartner.dto.users.UserResponseDto;
+import com.fitnesspartner.dto.users.UserSignupRequestDto;
+import com.fitnesspartner.dto.users.UserUpdateRequestDto;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.UsersRepository;
-import com.fitnesspartner.utils.encryptor.Encryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsersService {
 
     private final UsersRepository usersRepository;
-    private final Encryptor encryptor;
+
+    private final PasswordEncoder passwordEncoder;
 
     public String userSignup(UserSignupRequestDto userSignupRequestDto) {
         String username = userSignupRequestDto.getUsername();
@@ -29,7 +33,7 @@ public class UsersService {
 
         nicknameDuplicateCheck(nickname);
 
-        String encryptedPassword = encryptor.hashPassword(rawPassword);
+        String encryptedPassword = passwordEncoder.encode(rawPassword);
 
         Users users = Users.builder()
                 .username(username)
@@ -43,11 +47,6 @@ public class UsersService {
                 .build();
         usersRepository.save(users);
         return "회원가입 성공";
-    }
-
-
-    public UserResponseDto userLogin(UserLoginRequestDto userLoginRequestDto) {
-        return UserResponseDto.builder().build();
     }
 
     public UserResponseDto userInfo(String username) {
@@ -74,7 +73,7 @@ public class UsersService {
         nicknameDuplicateCheck(userUpdateRequestDto.getNickname());
 
         String rawPassword = userUpdateRequestDto.getPassword();
-        userUpdateRequestDto.setPassword(encryptor.hashPassword(rawPassword));
+        userUpdateRequestDto.setPassword(passwordEncoder.encode(rawPassword));
 
         users.updateUser(userUpdateRequestDto);
 
@@ -97,7 +96,7 @@ public class UsersService {
 
         String foundUserPassword = foundUsers.getPassword();
 
-        if(!encryptor.isMatch(password, foundUserPassword)) {
+        if(!passwordEncoder.matches(password, foundUserPassword)) {
             throw new RestApiException(ClientExceptionCode.PASSWORD_NOT_MATCH);
         }
 

@@ -21,12 +21,6 @@ public class UsersController {
                 .body(usersService.userSignup(userSignupRequestDto));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> userLogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
-        return ResponseEntity.ok()
-                .body(usersService.userLogin(userLoginRequestDto));
-    }
-
     @GetMapping("/{username}")
     public ResponseEntity<UserResponseDto> userInfo(@PathVariable String username) {
         return ResponseEntity.ok()

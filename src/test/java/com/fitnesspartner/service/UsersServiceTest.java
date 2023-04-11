@@ -8,7 +8,6 @@ import com.fitnesspartner.dto.users.UserResponseDto;
 import com.fitnesspartner.dto.users.UserSignupRequestDto;
 import com.fitnesspartner.dto.users.UserUpdateRequestDto;
 import com.fitnesspartner.repository.UsersRepository;
-import com.fitnesspartner.utils.encryptor.Encryptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.transaction.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Transactional
 @SpringBootTest
@@ -29,9 +28,6 @@ class UsersServiceTest {
 
     @Autowired
     UsersRepository usersRepository;
-
-    @Autowired
-    Encryptor encryptor;
 
     @Nested
     @DisplayName("서비스레이어 성공케이스")
@@ -83,10 +79,10 @@ class UsersServiceTest {
 
             // when
             usersService.userDisable(userDisableRequestDto);
-            Users foundUser = usersRepository.findByUsernameAndUserState(username, UserState.Enabled).get();
+            Users foundUser = usersRepository.findByUsernameAndUserState(username, UserState.Disabled).get();
 
             // then
-            assertEquals(foundUser.getUserState(), UserState.Disabled);
+            assertEquals(UserState.Disabled, foundUser.getUserState());
         }
 
         @Test
