@@ -40,7 +40,9 @@ public class UsersController {
     @PostMapping("/login")
     public ResponseEntity<String> userLogin(@Valid @RequestBody UserLoginRequestDto requestDto, HttpServletResponse response) {
         String tokenValue = usersService.userLogin(requestDto);
-        response.addCookie(new Cookie(JwtToken.TOKEN_NAME.getTokenName(), tokenValue));
+        Cookie cookie = new Cookie(JwtToken.TOKEN_NAME.getTokenName(), tokenValue);
+        cookie.setMaxAge(60 * 60 * 24);
+        response.addCookie(cookie);
         return ResponseEntity.ok()
                 .body(tokenValue);
     }

@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
         String servletPath = request.getServletPath();
-        if(servletPath.contains("/users/signup") || servletPath.contains("/users/login")) {
+        if(servletPath.contains("/users/signup")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -54,6 +54,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String username;
 
         jwtToken = getJwtToken(request.getCookies());
+
+        if(servletPath.contains("/users/login")) {
+            if(jwtToken != null) {
+                exceptionResponse(response, JwtExceptionCode.ALREADY_HAD_TOKEN);
+                return;
+            }
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if(Strings.isNullOrEmpty(jwtToken)) {
             exceptionResponse(response, JwtExceptionCode.TOKEN_NULL_OR_EMPTY);
             return;

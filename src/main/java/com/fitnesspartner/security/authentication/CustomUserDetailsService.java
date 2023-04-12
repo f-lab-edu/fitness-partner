@@ -18,9 +18,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        Users users = usersRepository.findByUsernameAndUserState(username, UserState.Enabled)
+        Users users = usersRepository.findByUsername(username)
                 .orElseThrow(
-                        () -> new RuntimeException(ClientExceptionCode.CANT_FIND_USER.getMessage())
+                        () -> new UsernameNotFoundException(ClientExceptionCode.CANT_FIND_USER.getMessage())
                 );
 
         return CustomUserDetails.builder()
