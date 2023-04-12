@@ -1,10 +1,10 @@
 package com.fitnesspartner.security;
 
 import com.fitnesspartner.jwt.JwtAuthenticationFilter;
-import com.fitnesspartner.security.authentication.CustomAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,7 +17,8 @@ public class SecurityFilterChainConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
 
-    private final CustomAuthenticationFilter authFilter;
+    private final AuthenticationProvider authenticationProvider;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -26,7 +27,9 @@ public class SecurityFilterChainConfig {
                 .formLogin().disable()
                 .authorizeHttpRequests(
                         (auth) -> auth
-                                .antMatchers(HttpMethod.POST, "/users/signup")
+                                .antMatchers(HttpMethod.POST,
+                                        "/users/signup",
+                                        "/users/login")
                                 .permitAll()
                                 .anyRequest().authenticated()
                 )
@@ -35,7 +38,7 @@ public class SecurityFilterChainConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 

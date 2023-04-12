@@ -1,11 +1,14 @@
 package com.fitnesspartner.controller;
 
 import com.fitnesspartner.dto.users.*;
+import com.fitnesspartner.jwt.JwtToken;
 import com.fitnesspartner.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -32,6 +35,14 @@ public class UsersController {
                                                           @Valid @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
         return ResponseEntity.ok()
                 .body(usersService.userUpdate(username, userUpdateRequestDto));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> userLogin(@Valid @RequestBody UserLoginRequestDto requestDto, HttpServletResponse response) {
+        String tokenValue = usersService.userLogin(requestDto);
+        response.addCookie(new Cookie(JwtToken.TOKEN_NAME.getTokenName(), tokenValue));
+        return ResponseEntity.ok()
+                .body(tokenValue);
     }
 
     @DeleteMapping()

@@ -2,20 +2,19 @@ package com.fitnesspartner.service;
 
 import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.domain.Users;
-import com.fitnesspartner.dto.users.UserDisableRequestDto;
-import com.fitnesspartner.dto.users.UserResponseDto;
-import com.fitnesspartner.dto.users.UserSignupRequestDto;
-import com.fitnesspartner.dto.users.UserUpdateRequestDto;
+import com.fitnesspartner.dto.users.*;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
+import com.fitnesspartner.jwt.JwtService;
 import com.fitnesspartner.repository.UsersRepository;
+import com.fitnesspartner.security.authentication.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsersService {
@@ -23,6 +22,10 @@ public class UsersService {
     private final UsersRepository usersRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
 
     public String userSignup(UserSignupRequestDto userSignupRequestDto) {
         String username = userSignupRequestDto.getUsername();
@@ -122,5 +125,23 @@ public class UsersService {
                 .orElseThrow(
                         () -> new RestApiException(ClientExceptionCode.CANT_FIND_USER)
                 );
+    }
+
+    public String userLogin(UserLoginRequestDto requestDto) {
+        String username = requestDto.getUsername();
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        username,
+                        requestDto.getPassword()
+                )
+        );
+        Users user = findUserByUsernameIfExist(username);
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                        .users(user)
+                        .build();
+
+        String tokenValue = jwtService.generateToken(userDetails);
+
+        return tokenValue;
     }
 }
