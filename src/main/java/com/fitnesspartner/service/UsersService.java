@@ -5,20 +5,27 @@ import com.fitnesspartner.domain.Users;
 import com.fitnesspartner.dto.users.*;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
+import com.fitnesspartner.jwt.JwtService;
 import com.fitnesspartner.repository.UsersRepository;
-import com.fitnesspartner.utils.encryptor.Encryptor;
+import com.fitnesspartner.security.authentication.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsersService {
 
     private final UsersRepository usersRepository;
-    private final Encryptor encryptor;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
 
     public String userSignup(UserSignupRequestDto userSignupRequestDto) {
         String username = userSignupRequestDto.getUsername();
@@ -29,7 +36,7 @@ public class UsersService {
 
         nicknameDuplicateCheck(nickname);
 
-        String encryptedPassword = encryptor.hashPassword(rawPassword);
+        String encryptedPassword = passwordEncoder.encode(rawPassword);
 
         Users users = Users.builder()
                 .username(username)
@@ -43,11 +50,6 @@ public class UsersService {
                 .build();
         usersRepository.save(users);
         return "회원가입 성공";
-    }
-
-
-    public UserResponseDto userLogin(UserLoginRequestDto userLoginRequestDto) {
-        return UserResponseDto.builder().build();
     }
 
     public UserResponseDto userInfo(String username) {
@@ -74,7 +76,7 @@ public class UsersService {
         nicknameDuplicateCheck(userUpdateRequestDto.getNickname());
 
         String rawPassword = userUpdateRequestDto.getPassword();
-        userUpdateRequestDto.setPassword(encryptor.hashPassword(rawPassword));
+        userUpdateRequestDto.setPassword(passwordEncoder.encode(rawPassword));
 
         users.updateUser(userUpdateRequestDto);
 
@@ -97,7 +99,7 @@ public class UsersService {
 
         String foundUserPassword = foundUsers.getPassword();
 
-        if(!encryptor.isMatch(password, foundUserPassword)) {
+        if(!passwordEncoder.matches(password, foundUserPassword)) {
             throw new RestApiException(ClientExceptionCode.PASSWORD_NOT_MATCH);
         }
 
@@ -123,5 +125,23 @@ public class UsersService {
                 .orElseThrow(
                         () -> new RestApiException(ClientExceptionCode.CANT_FIND_USER)
                 );
+    }
+
+    public String userLogin(UserLoginRequestDto requestDto) {
+        String username = requestDto.getUsername();
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        username,
+                        requestDto.getPassword()
+                )
+        );
+        Users user = findUserByUsernameIfExist(username);
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                        .users(user)
+                        .build();
+
+        String tokenValue = jwtService.generateToken(userDetails);
+
+        return tokenValue;
     }
 }

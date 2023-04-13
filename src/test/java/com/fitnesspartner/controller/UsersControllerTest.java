@@ -3,7 +3,10 @@ package com.fitnesspartner.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitnesspartner.annotation.EnableMockMvc;
 import com.fitnesspartner.constants.Gender;
+import com.fitnesspartner.dto.users.UserLoginRequestDto;
 import com.fitnesspartner.dto.users.UserSignupRequestDto;
+import com.fitnesspartner.repository.UsersRepository;
+import com.fitnesspartner.service.UsersService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,9 +15,13 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
+import javax.servlet.FilterChain;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,11 +37,18 @@ class UsersControllerTest {
     @InjectMocks
     ObjectMapper objectMapper;
 
+    @MockBean
+    private UsersService userService;
+
+    @MockBean
+    private UsersRepository userRepository;
+
     private String userSignupUrl = "/users/signup";
 
     @Nested
     @DisplayName("성공 케이스")
     class 성공_케이스 {
+
         @Test
         @DisplayName("유저 회원가입")
         void 유저_회원가입() throws Exception {
@@ -53,6 +67,27 @@ class UsersControllerTest {
 
             // when, then
             mockMvc.perform(post(userSignupUrl)
+                    .servletPath(userSignupUrl)
+                    .content(content)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("유저 로그인 / 토큰 발급")
+        void 유저_로그인() throws Exception {
+            // given
+            String loginUrl = "/users/login";
+            UserLoginRequestDto userLoginRequestDto = UserLoginRequestDto.builder()
+                    .username("nahealth")
+                    .password("12345678")
+                    .build();
+
+            String content = objectMapper.writeValueAsString(userLoginRequestDto);
+
+            // when, then
+            mockMvc.perform(post(loginUrl)
+                    .servletPath(loginUrl)
                     .content(content)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk());
