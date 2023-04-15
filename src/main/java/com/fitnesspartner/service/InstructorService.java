@@ -38,7 +38,7 @@ public class InstructorService {
                 .addressDetails(switchToInstructorRequestDto.getAddressDetails())
                 .instructorState(InstructorState.Enabled)
                 .build();
-                
+
         instructorRepository.save(instructor);
 
         return "강사 전환이 완료되었습니다.";
