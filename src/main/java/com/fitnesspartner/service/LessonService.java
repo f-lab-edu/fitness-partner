@@ -29,6 +29,7 @@ public class LessonService {
     private final InstructorRepository instructorRepository;
     private final UsersRepository usersRepository;
 
+    @Transactional
     public String lessonCreate(LessonCreateRequestDto requestDto) {
 
         String lessonName = requestDto.getLessonName();
@@ -56,6 +57,8 @@ public class LessonService {
                 .lessonState(LessonState.Enabled)
                 .instructor(instructor)
                 .build();
+
+        instructor.addLessonList(lesson);
         lessonRepository.save(lesson);
 
         return "레슨이 생성되었습니다.";
@@ -79,8 +82,6 @@ public class LessonService {
         return "레슨이 비활성화 되었습니다.";
     }
 
-
-    @Transactional
     public String lessonUpdate(LessonUpdateRequestDto requestDto) {
         LocalDateTime starDateTime = requestDto.getStartDateTime();
         LocalDateTime endDateTime= requestDto.getEndDateTime();
@@ -97,6 +98,7 @@ public class LessonService {
         return "레슨 수정을 완료했습니다.";
     }
 
+    @Transactional
     public LessonInfoResponseDto lessonInfo(Long lessonId) {
         Lesson lesson = findLessonByLessonId(lessonId);
         Instructor instructor = lesson.getInstructor();
