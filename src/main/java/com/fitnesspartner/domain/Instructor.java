@@ -41,7 +41,7 @@ public class Instructor {
     @JoinColumn(name = "users_id", nullable = false)
     private Users users;
 
-    @OneToMany(mappedBy = "instructor")
+    @OneToMany(mappedBy = "instructor", fetch =  FetchType.LAZY)
     private final List<Lesson> lessonList = new ArrayList<>();
 
     public void instructorAddressUpdate(InstructorAddressUpdateRequestDto instructorAddressUpdateRequestDto) {
