@@ -19,7 +19,7 @@ public class LessonController {
     private final LessonService lessonService;
 
     @PostMapping()
-    public ResponseEntity<String> lessonCreate(@Valid LessonCreateRequestDto requestDto) {
+    public ResponseEntity<String> lessonCreate(@Valid @RequestBody LessonCreateRequestDto requestDto) {
         return ResponseEntity.ok()
                 .body(lessonService.lessonCreate(requestDto));
     }

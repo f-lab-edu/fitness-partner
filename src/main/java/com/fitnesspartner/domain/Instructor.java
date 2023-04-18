@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -35,9 +37,12 @@ public class Instructor {
     @Enumerated(EnumType.STRING)
     private InstructorState instructorState;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "usersId")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_id", nullable = false)
     private Users users;
+
+    @OneToMany(mappedBy = "instructor", fetch =  FetchType.LAZY)
+    private final List<Lesson> lessonList = new ArrayList<>();
 
     public void instructorAddressUpdate(InstructorAddressUpdateRequestDto instructorAddressUpdateRequestDto) {
         this.addressSido = instructorAddressUpdateRequestDto.getAddressSido();
@@ -48,5 +53,9 @@ public class Instructor {
         if(addressDetails != null) {
             this.addressDetails = addressDetails;
         }
+    }
+
+    public void addLessonList(Lesson lesson) {
+        this.lessonList.add(lesson);
     }
 }

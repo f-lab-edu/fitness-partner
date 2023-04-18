@@ -3,9 +3,7 @@ package com.fitnesspartner.service;
 import com.fitnesspartner.constants.InstructorState;
 import com.fitnesspartner.constants.LessonState;
 import com.fitnesspartner.constants.UserState;
-import com.fitnesspartner.domain.Instructor;
-import com.fitnesspartner.domain.Lesson;
-import com.fitnesspartner.domain.Users;
+import com.fitnesspartner.domain.*;
 import com.fitnesspartner.dto.lesson.LessonCreateRequestDto;
 import com.fitnesspartner.dto.lesson.LessonDisableRequestDto;
 import com.fitnesspartner.dto.lesson.LessonInfoResponseDto;
@@ -15,6 +13,7 @@ import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.InstructorRepository;
 import com.fitnesspartner.repository.LessonRepository;
 import com.fitnesspartner.repository.UsersRepository;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +28,9 @@ public class LessonService {
     private final InstructorRepository instructorRepository;
     private final UsersRepository usersRepository;
 
+    private final JPAQueryFactory jpaQueryFactory;
+
+    @Transactional
     public String lessonCreate(LessonCreateRequestDto requestDto) {
 
         String lessonName = requestDto.getLessonName();
@@ -56,6 +58,8 @@ public class LessonService {
                 .lessonState(LessonState.Enabled)
                 .instructor(instructor)
                 .build();
+
+        instructor.addLessonList(lesson);
         lessonRepository.save(lesson);
 
         return "레슨이 생성되었습니다.";
@@ -79,8 +83,6 @@ public class LessonService {
         return "레슨이 비활성화 되었습니다.";
     }
 
-
-    @Transactional
     public String lessonUpdate(LessonUpdateRequestDto requestDto) {
         LocalDateTime starDateTime = requestDto.getStartDateTime();
         LocalDateTime endDateTime= requestDto.getEndDateTime();
@@ -98,9 +100,17 @@ public class LessonService {
     }
 
     public LessonInfoResponseDto lessonInfo(Long lessonId) {
-        Lesson lesson = findLessonByLessonId(lessonId);
-        Instructor instructor = lesson.getInstructor();
-        Users users = instructor.getUsers();
+        QLesson qLesson = QLesson.lesson;
+        QInstructor qInstructor = QInstructor.instructor;
+        QUsers qUsers = QUsers.users;
+
+        Lesson lesson = jpaQueryFactory.selectFrom(qLesson)
+                .innerJoin(qLesson.instructor, qInstructor).fetchJoin()
+                .innerJoin(qInstructor.users, qUsers).fetchJoin()
+                .where(qLesson.lessonId.eq(lessonId))
+                .fetchOne();
+
+        Users users = lesson.getInstructor().getUsers();
 
         return LessonInfoResponseDto.builder()
                 .username(users.getUsername())

@@ -68,6 +68,7 @@ class LessonBookingServiceTest {
                 .gender(Gender.MALE)
                 .userState(UserState.Enabled)
                 .build();
+        usersRepository.save(instructorUsers);
 
         studentUsers = Users.builder()
                 .username("student")
