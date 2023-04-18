@@ -46,9 +46,8 @@ public class Lesson {
     @Enumerated(EnumType.STRING)
     private LessonState lessonState;
 
-//    @Column(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "instructorId")
+    @JoinColumn(name = "instructor_id", nullable = false)
     private Instructor instructor;
 
     public void lessonUpdate(LessonUpdateRequestDto requestDto) {

@@ -23,11 +23,11 @@ public class LessonBooking {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lessonId")
+    @JoinColumn(name = "lessonId", nullable = false)
     private Lesson lesson;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usersId")
+    @JoinColumn(name = "usersId", nullable = false)
     private Users users;
 }
