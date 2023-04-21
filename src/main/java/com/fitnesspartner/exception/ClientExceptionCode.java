@@ -25,10 +25,11 @@ public enum ClientExceptionCode implements ErrorCode {
 
 
     // Lesson Booking
-    INSTRUCTOR_CANT_BOOK_LESSON(HttpStatus.BAD_REQUEST, 400, "강사는 레슨을 수강 할 수 없습니다."),
+    LESSON_INSTRUCTOR_CANT_BOOK(HttpStatus.BAD_REQUEST, 400, "레슨 강사는 레슨을 예약 할 수 없습니다."),
     ALREADY_BOOKED_LESSON(HttpStatus.BAD_REQUEST, 400, "유저가 레슨을 이미 예약하셨습니다."),
     CANT_FIND_LESSON_BOOKING(HttpStatus.BAD_REQUEST, 400, "레슨 예약을 찾을 수 없습니다."),
     CANT_CANCEL_ON_DAY_LESSON(HttpStatus.BAD_REQUEST, 400, "레슨 당일에는 취소를 할 수 없습니다."),
+    NOT_LESSON_BOOKING_MEMBER(HttpStatus.BAD_REQUEST, 400, "레슨을 예약한 레슨 멤버가 아닙니다."),
 
     // Lesson Member
     CANT_FIND_LESSON_MEMBER(HttpStatus.BAD_REQUEST, 400, "레슨 멤버를 찾을 수 없습니다.")
