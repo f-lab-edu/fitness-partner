@@ -4,20 +4,14 @@ import com.fitnesspartner.constants.Gender;
 import com.fitnesspartner.constants.InstructorState;
 import com.fitnesspartner.constants.LessonState;
 import com.fitnesspartner.constants.UserState;
-import com.fitnesspartner.domain.Instructor;
-import com.fitnesspartner.domain.Lesson;
-import com.fitnesspartner.domain.LessonBooking;
-import com.fitnesspartner.domain.Users;
-import com.fitnesspartner.dto.lessonBooking.LessonBookingCreateRequestDto;
+import com.fitnesspartner.domain.*;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingGetAllByUserResponseDto;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingRemoveRequestDto;
 import com.fitnesspartner.dto.lessonBooking.LessonBookingResponseDto;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
-import com.fitnesspartner.repository.InstructorRepository;
-import com.fitnesspartner.repository.LessonBookingRepository;
-import com.fitnesspartner.repository.LessonRepository;
-import com.fitnesspartner.repository.UsersRepository;
+import com.fitnesspartner.repository.*;
+import com.fitnesspartner.security.authentication.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +45,15 @@ class LessonBookingServiceTest {
     @Autowired
     UsersRepository usersRepository;
 
+    @Autowired
+    LessonMemberRepository lessonMemberRepository;
+
+
+
     Users studentUsers;
+
+    LessonMember lessonMember;
+
     Users instructorUsers;
     Instructor instructor;
     Lesson lesson;
@@ -81,6 +83,11 @@ class LessonBookingServiceTest {
                 .userState(UserState.Enabled)
                 .build();
         usersRepository.save(studentUsers);
+
+        lessonMember = LessonMember.builder()
+                .users(studentUsers)
+                .build();
+        lessonMemberRepository.save(lessonMember);
 
         instructor = Instructor.builder()
                 .users(instructorUsers)
@@ -116,13 +123,13 @@ class LessonBookingServiceTest {
         @DisplayName("레슨 예약")
         void 성공케이스1() {
             // given
-            LessonBookingCreateRequestDto requestDto = new LessonBookingCreateRequestDto(
-                    lesson.getLessonId(),
-                    studentUsers.getUsername()
-            );
+            Long lessonId = lesson.getLessonId();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
 
             // when
-            String responseMessage = lessonBookingService.lessonBookingCreate(requestDto);
+            String responseMessage = lessonBookingService.lessonBookingCreate(lessonId, userDetails);
 
             // then
             assertEquals("레슨 예약이 완료되었습니다.", responseMessage);
@@ -132,21 +139,21 @@ class LessonBookingServiceTest {
         @DisplayName("레슨 예약 취소(삭제)")
         void 성공케이스2() {
             // given
-            LessonBookingCreateRequestDto lessonBookingCreateRequestDto = new LessonBookingCreateRequestDto(
-                    lesson.getLessonId(),
-                    studentUsers.getUsername()
-            );
-            lessonBookingService.lessonBookingCreate(lessonBookingCreateRequestDto);
-            LessonBooking lessonBooking = lessonBookingRepository.findByUsers(studentUsers).get(0);
+            Long lessonId = lesson.getLessonId();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
+
+            lessonBookingService.lessonBookingCreate(lessonId, userDetails);
+            LessonBooking lessonBooking = lessonBookingRepository.findAllByLessonMember(lessonMember).get(0);
 
             LessonBookingRemoveRequestDto requestDto = new LessonBookingRemoveRequestDto(
                     lesson.getLessonId(),
-                    lessonBooking.getLessonBookingId(),
-                    studentUsers.getUsername()
+                    lessonBooking.getLessonBookingId()
             );
 
             // when
-            String responseMessage = lessonBookingService.lessonBookingRemove(requestDto);
+            String responseMessage = lessonBookingService.lessonBookingRemove(requestDto, userDetails);
 
             // then
             assertEquals("레슨 취소가 완료되었습니다.", responseMessage);
@@ -156,16 +163,17 @@ class LessonBookingServiceTest {
         @DisplayName("레슨 예약 정보조회")
         void 성공케이스3() {
             // given
-            LessonBookingCreateRequestDto lessonBookingCreateRequestDto = new LessonBookingCreateRequestDto(
-                    lesson.getLessonId(),
-                    studentUsers.getUsername()
-            );
-            lessonBookingService.lessonBookingCreate(lessonBookingCreateRequestDto);
-            LessonBooking lessonBooking = lessonBookingRepository.findByUsers(studentUsers).get(0);
+            Long lessonId = lesson.getLessonId();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
 
+            lessonBookingService.lessonBookingCreate(lessonId, userDetails);
+            LessonBooking lessonBooking = lessonBookingRepository.findAllByLessonMember(lessonMember).get(0);
+            Long lessonBookingId = lessonBooking.getLessonBookingId();
 
             // when
-            LessonBookingResponseDto responseDto = lessonBookingService.lessonBookingInfo(lessonBooking.getLessonBookingId());
+            LessonBookingResponseDto responseDto = lessonBookingService.lessonBookingInfo(lessonBookingId, userDetails);
 
             // then
             assertEquals(lesson.getLessonId(), responseDto.getLessonId());
@@ -179,14 +187,16 @@ class LessonBookingServiceTest {
         @DisplayName("유저가 예약한 레슨 정보 전체 조회")
         void 성공케이스4() {
             // given
-            LessonBookingCreateRequestDto lessonBookingCreateRequestDto = new LessonBookingCreateRequestDto(
-                    lesson.getLessonId(),
-                    studentUsers.getUsername()
-            );
-            lessonBookingService.lessonBookingCreate(lessonBookingCreateRequestDto);
+            Long lessonId = lesson.getLessonId();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
+
+            lessonBookingService.lessonBookingCreate(lessonId, userDetails);
+            Long LessonMemberId = lessonMember.getLessonMemberId();
 
             // when
-            LessonBookingGetAllByUserResponseDto responseDto = lessonBookingService.lessonBookingGetAllByUser(studentUsers.getUsername());
+            LessonBookingGetAllByUserResponseDto responseDto = lessonBookingService.lessonBookingGetAll(userDetails, LessonMemberId);
             List<LessonBookingResponseDto> lessonBookingResponseDtoList = responseDto.getLessonBookingList();
             LessonBookingResponseDto lessonBookingResponseDto = lessonBookingResponseDtoList.get(0);
 
@@ -208,15 +218,15 @@ class LessonBookingServiceTest {
         @DisplayName("중복 예약")
         void 실패케이스1() {
             // given
-            LessonBookingCreateRequestDto requestDto = new LessonBookingCreateRequestDto(
-                    lesson.getLessonId(),
-                    studentUsers.getUsername()
-            );
-            lessonBookingService.lessonBookingCreate(requestDto);
+            Long lessonId = lesson.getLessonId();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
+            lessonBookingService.lessonBookingCreate(lessonId, userDetails);
 
             // when
             RestApiException exception = assertThrows(RestApiException.class,
-                    () -> lessonBookingService.lessonBookingCreate(requestDto)
+                    () -> lessonBookingService.lessonBookingCreate(lessonId, userDetails)
             );
 
             // then
@@ -229,13 +239,15 @@ class LessonBookingServiceTest {
             // given
             LessonBookingRemoveRequestDto requestDto = new LessonBookingRemoveRequestDto(
                     lesson.getLessonId(),
-                    9999L,
-                    studentUsers.getUsername()
+                    9999L
             );
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
 
             // when
             RestApiException exception = assertThrows(RestApiException.class,
-                    () -> lessonBookingService.lessonBookingRemove(requestDto)
+                    () -> lessonBookingService.lessonBookingRemove(requestDto, userDetails)
             );
 
             // then
@@ -247,13 +259,17 @@ class LessonBookingServiceTest {
         void 실패케이스3() {
             // given
             Long fakeLessonBookingId = 9999L;
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
 
             // when
+//            lessonBookingService.lessonBookingInfo(fakeLessonBookingId, userDetails);
             RestApiException exception = assertThrows(RestApiException.class,
-                    () -> lessonBookingService.lessonBookingInfo(fakeLessonBookingId)
+                    () -> lessonBookingService.lessonBookingInfo(fakeLessonBookingId, userDetails)
             );
 
-            // then
+//            // then
             assertEquals(ClientExceptionCode.CANT_FIND_LESSON_BOOKING, exception.getErrorCode());
         }
 
@@ -261,11 +277,14 @@ class LessonBookingServiceTest {
         @DisplayName("조회할 유저의 레슨 예약들이 없음")
         void 실패케이스4() {
             // given
-            String username = studentUsers.getUsername();
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(studentUsers)
+                    .build();
+            Long LessonMemberId = lessonMember.getLessonMemberId();
 
             // when
             RestApiException exception = assertThrows(RestApiException.class,
-                    () -> lessonBookingService.lessonBookingGetAllByUser(username)
+                    () -> lessonBookingService.lessonBookingGetAll(userDetails, LessonMemberId)
             );
 
             // then

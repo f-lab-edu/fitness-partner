@@ -26,8 +26,7 @@ public class LessonBooking {
     @JoinColumn(name = "lessonId", nullable = false)
     private Lesson lesson;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usersId", nullable = false)
-    private Users users;
+    @JoinColumn(name = "lessonMemberId", nullable = false)
+    private LessonMember lessonMember;
 }
