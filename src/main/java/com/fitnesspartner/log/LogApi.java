@@ -2,12 +2,14 @@ package com.fitnesspartner.log;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 @Document(collation = "log_api")
 public class LogApi {
@@ -22,6 +24,12 @@ public class LogApi {
     private String handlerMethodName;
 
     private String servletPath;
+
+    private String requestBody;
+
+    private String responseBody;
+
+    private String queryUrl;
 
     private LocalDateTime localDateTime;
 }
