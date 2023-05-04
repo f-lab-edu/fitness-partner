@@ -2,10 +2,13 @@ package com.fitnesspartner.controller;
 
 import com.fitnesspartner.dto.instructor.InstructorAddressUpdateRequestDto;
 import com.fitnesspartner.dto.instructor.InstructorInfoResponseDto;
+import com.fitnesspartner.dto.instructor.InstructorLessonsResponseDto;
 import com.fitnesspartner.dto.instructor.SwitchToInstructorRequestDto;
+import com.fitnesspartner.security.authentication.CustomUserDetails;
 import com.fitnesspartner.service.InstructorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -38,5 +41,11 @@ public class InstructorController {
     public ResponseEntity<Object> addInstructorCertificate() {
         return ResponseEntity.ok()
                 .body(instructorService.addInstructorCertificate());
+    }
+
+    @GetMapping("/lessons")
+    public ResponseEntity<InstructorLessonsResponseDto> instructorLessons(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok()
+                .body(instructorService.getInstructorLessons(userDetails));
     }
 }
