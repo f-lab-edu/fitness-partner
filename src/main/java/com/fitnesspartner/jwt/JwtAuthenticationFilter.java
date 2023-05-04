@@ -6,9 +6,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fitnesspartner.dto.common.ExceptionResponseDto;
 import com.fitnesspartner.exception.JwtExceptionCode;
+import com.fitnesspartner.log.ExceptionLoggingInterceptor;
 import com.fitnesspartner.security.authentication.CustomUserDetailsService;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String CHARACTER_ENCODING = "UTF-8";
     private static final String CONTENT_TYPE = "application/json";
 
+    private final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     // 토큰 인증 정보를 현재 쓰레드의 SecurityContext 에 저장하는 역할 수행
     @Override
@@ -105,6 +109,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void exceptionResponse(HttpServletResponse response, JwtExceptionCode jwtExceptionCode) throws IOException {
+        logger.error("JWT Exception : {}", jwtExceptionCode.getMessage());
+        
         ObjectMapper mapper = new ObjectMapper();
         response.setCharacterEncoding(CHARACTER_ENCODING);
         response.setContentType(CONTENT_TYPE);

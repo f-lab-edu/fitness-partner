@@ -2,16 +2,19 @@ package com.fitnesspartner.service;
 
 import com.fitnesspartner.constants.Gender;
 import com.fitnesspartner.constants.InstructorState;
+import com.fitnesspartner.constants.LessonState;
 import com.fitnesspartner.constants.UserState;
 import com.fitnesspartner.domain.Instructor;
+import com.fitnesspartner.domain.Lesson;
 import com.fitnesspartner.domain.Users;
-import com.fitnesspartner.dto.instructor.InstructorAddressUpdateRequestDto;
-import com.fitnesspartner.dto.instructor.InstructorInfoResponseDto;
-import com.fitnesspartner.dto.instructor.SwitchToInstructorRequestDto;
+import com.fitnesspartner.dto.instructor.*;
+import com.fitnesspartner.dto.lesson.LessonCreateRequestDto;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.InstructorRepository;
+import com.fitnesspartner.repository.LessonRepository;
 import com.fitnesspartner.repository.UsersRepository;
+import com.fitnesspartner.security.authentication.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,6 +39,9 @@ class InstructorServiceTest {
 
     @Autowired
     UsersRepository usersRepository;
+
+    @Autowired
+    LessonRepository lessonRepository;
 
     private Users users;
 
@@ -136,6 +144,52 @@ class InstructorServiceTest {
             assertEquals(instructorAddressUpdateRequestDto.getAddressDetails(), instructor.getAddressDetails());
         }
 
+        @Test
+        @DisplayName("강사가 들록한 레슨들 정보 조회")
+        void 강사_레슨리스트_조회() {
+            // given
+            CustomUserDetails userDetails = CustomUserDetails.builder()
+                    .users(users)
+                    .build();
+
+            Instructor instructor = Instructor.builder()
+                    .users(users)
+                    .addressSido("서울")
+                    .addressSigungu("성복구")
+                    .addressRoadName("서울숲길")
+                    .addressDetails("17번가")
+                    .instructorState(InstructorState.Enabled)
+                    .build();
+
+            instructorRepository.save(instructor);
+
+            Lesson lesson = Lesson.builder()
+                    .lessonName("김계란의 개인PT")
+                    .lessonDescription("개인으로 진행되는 트레이닝")
+                    .maxEnrollment(1)
+                    .centerName("부곡동 파워짐")
+                    .centerAddress("서울 강북구 부곡동 없는길 17")
+                    .startDateTime(LocalDateTime.of(2023, 3, 30, 15, 0))
+                    .endDateTime(LocalDateTime.of(2023, 3, 30, 20, 0))
+                    .lessonState(LessonState.Enabled)
+                    .instructor(instructor)
+                    .build();
+
+            lessonRepository.save(lesson);
+
+            // when
+            InstructorLessonsResponseDto responseDto = instructorService.getInstructorLessons(userDetails);
+            InstructorLessonInfo instructorLessonInfo = responseDto.getInstructorLessonInfoList().get(0);
+
+            // then
+            assertEquals(userDetails.getUsername(), instructorLessonInfo.getUsername());
+            assertEquals(lesson.getLessonName(), instructorLessonInfo.getLessonName());
+            assertEquals(lesson.getMaxEnrollment(), instructorLessonInfo.getMaxEnrollment());
+            assertEquals(lesson.getCenterName(), instructorLessonInfo.getCenterName());
+            assertEquals(lesson.getCenterAddress(), instructorLessonInfo.getCenterAddress());
+            assertEquals(lesson.getStartDateTime(), instructorLessonInfo.getStartDateTime());
+            assertEquals(lesson.getEndDateTime(), instructorLessonInfo.getEndDateTime());
+        }
     }
 
     @Nested
