@@ -6,16 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 public class UserUpdateRequestDto {
-
-    @Size(min = 4, max = 15)
-    private String username;
 
     @Size(min = 2, max = 13)
     private String name;

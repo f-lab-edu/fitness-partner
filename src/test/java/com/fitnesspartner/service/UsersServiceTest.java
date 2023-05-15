@@ -97,7 +97,6 @@ class UsersServiceTest {
         void 유저_정보수정() {
             // given
             UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
-                    "nahealthh",
                     "김계란2",
                     "나헬린2",
                     "123456789",
@@ -110,7 +109,6 @@ class UsersServiceTest {
             UserResponseDto userResponseDto = usersService.userUpdate(username, userUpdateRequestDto);
 
             // then
-            assertEquals(userResponseDto.getUsername(), userUpdateRequestDto.getUsername());
             assertEquals(userResponseDto.getName(), userUpdateRequestDto.getName());
             assertEquals(userResponseDto.getNickname(), userResponseDto.getNickname());
             assertEquals(userResponseDto.getEmail(), userResponseDto.getEmail());

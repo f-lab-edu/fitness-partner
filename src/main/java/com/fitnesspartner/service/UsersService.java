@@ -71,8 +71,6 @@ public class UsersService {
     public UserResponseDto userUpdate(String username, UserUpdateRequestDto userUpdateRequestDto) {
         Users users = findUserByUsernameIfExist(username);
 
-        usernameDuplicateCheck(userUpdateRequestDto.getUsername());
-
         nicknameDuplicateCheck(userUpdateRequestDto.getNickname());
 
         String rawPassword = userUpdateRequestDto.getPassword();
