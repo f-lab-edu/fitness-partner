@@ -52,9 +52,6 @@ public class Users extends TimeStamped {
 
 
     public void updateUser(UserUpdateRequestDto userUpdateRequestDto) {
-        if(userUpdateRequestDto.getUsername() != null) {
-            this.username = userUpdateRequestDto.getUsername();
-        }
 
         if(userUpdateRequestDto.getName() != null) {
             this.name = userUpdateRequestDto.getName();
