@@ -106,6 +106,24 @@ public class UsersService {
         return "비활성화 완료";
     }
 
+    public String userLogin(UserLoginRequestDto requestDto) {
+        String username = requestDto.getUsername();
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        username,
+                        requestDto.getPassword()
+                )
+        );
+        Users user = findUserByUsernameIfExist(username);
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .users(user)
+                .build();
+
+        String tokenValue = jwtService.generateToken(userDetails);
+
+        return tokenValue;
+    }
+
     private void usernameDuplicateCheck(String username) {
         if(usersRepository.existsByUsername(username)) {
             throw new RestApiException(ClientExceptionCode.USERNAME_IS_DUPLICATE);
@@ -123,23 +141,5 @@ public class UsersService {
                 .orElseThrow(
                         () -> new RestApiException(ClientExceptionCode.CANT_FIND_USER)
                 );
-    }
-
-    public String userLogin(UserLoginRequestDto requestDto) {
-        String username = requestDto.getUsername();
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        requestDto.getPassword()
-                )
-        );
-        Users user = findUserByUsernameIfExist(username);
-        CustomUserDetails userDetails = CustomUserDetails.builder()
-                        .users(user)
-                        .build();
-
-        String tokenValue = jwtService.generateToken(userDetails);
-
-        return tokenValue;
     }
 }

@@ -100,6 +100,9 @@ public class LessonService {
     }
 
     public LessonInfoResponseDto lessonInfo(Long lessonId) {
+
+        existsCheckByLessonId(lessonId);
+
         QLesson qLesson = QLesson.lesson;
         QInstructor qInstructor = QInstructor.instructor;
         QUsers qUsers = QUsers.users;
@@ -121,6 +124,12 @@ public class LessonService {
                 .endDateTime(lesson.getEndDateTime())
                 .maxEnrollment(lesson.getMaxEnrollment())
                 .build();
+    }
+
+    private void existsCheckByLessonId(Long lessonId) {
+        if(!lessonRepository.existsById(lessonId)) {
+            throw new RestApiException(ClientExceptionCode.CANT_FIND_LESSON);
+        }
     }
 
     private Lesson findLessonByLessonId(Long lessonId) {
