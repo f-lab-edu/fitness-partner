@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -50,6 +52,8 @@ public class Users extends TimeStamped {
     @Enumerated(EnumType.STRING)
     private UserState userState;
 
+    @OneToMany(mappedBy =  "users", fetch = FetchType.LAZY)
+    private List<UserRoles> userRolesList = new ArrayList<>();
 
     public void updateUser(UserUpdateRequestDto userUpdateRequestDto) {
 

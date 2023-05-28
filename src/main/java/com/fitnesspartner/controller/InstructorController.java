@@ -1,9 +1,6 @@
 package com.fitnesspartner.controller;
 
-import com.fitnesspartner.dto.instructor.InstructorAddressUpdateRequestDto;
-import com.fitnesspartner.dto.instructor.InstructorInfoResponseDto;
-import com.fitnesspartner.dto.instructor.InstructorLessonsResponseDto;
-import com.fitnesspartner.dto.instructor.SwitchToInstructorRequestDto;
+import com.fitnesspartner.dto.instructor.*;
 import com.fitnesspartner.security.authentication.CustomUserDetails;
 import com.fitnesspartner.service.InstructorService;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +17,10 @@ public class InstructorController {
     private final InstructorService instructorService;
 
     @PostMapping()
-    public ResponseEntity<String> switchToInstructor(@Valid @RequestBody SwitchToInstructorRequestDto switchToInstructorRequestDto) {
+    public ResponseEntity<SwitchToInstructorResponseDto> switchToInstructor(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                            @Valid @RequestBody SwitchToInstructorRequestDto switchToInstructorRequestDto) {
         return ResponseEntity.ok()
-                .body(instructorService.switchToInstructor(switchToInstructorRequestDto));
+                .body(instructorService.switchToInstructor(userDetails, switchToInstructorRequestDto));
     }
 
     @GetMapping("/{username}")

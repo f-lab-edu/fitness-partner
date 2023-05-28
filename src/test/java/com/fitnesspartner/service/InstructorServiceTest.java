@@ -45,6 +45,8 @@ class InstructorServiceTest {
 
     private Users users;
 
+    private CustomUserDetails userDetails;
+
     @BeforeEach
     void BeforeEach() {
         users = Users.builder()
@@ -58,6 +60,10 @@ class InstructorServiceTest {
                 .userState(UserState.Enabled)
                 .build();
         usersRepository.save(users);
+
+        userDetails = CustomUserDetails.builder()
+                .users(users)
+                .build();
     }
 
     @Nested
@@ -68,7 +74,6 @@ class InstructorServiceTest {
         void 강사전환() {
             // given
             SwitchToInstructorRequestDto switchToInstructorRequestDto = new SwitchToInstructorRequestDto(
-                    "nahealth",
                     "서울",
                     "성복구",
                     "서울숲길",
@@ -76,7 +81,7 @@ class InstructorServiceTest {
             );
 
             // when
-            instructorService.switchToInstructor(switchToInstructorRequestDto);
+            instructorService.switchToInstructor(userDetails, switchToInstructorRequestDto);
             Instructor instructor = instructorRepository.findByUsersAndInstructorState(users, InstructorState.Enabled).get();
 
             // then
@@ -92,8 +97,7 @@ class InstructorServiceTest {
             // given
             String username = users.getUsername();
             String instructorNickname = users.getNickname();
-            instructorService.switchToInstructor(new SwitchToInstructorRequestDto(
-                    username,
+            instructorService.switchToInstructor(userDetails, new SwitchToInstructorRequestDto(
                     "서울",
                     "성복구",
                     "서울숲길",
@@ -125,8 +129,7 @@ class InstructorServiceTest {
                     "129-1 751빌딩 B2"
             );
 
-            instructorService.switchToInstructor(new SwitchToInstructorRequestDto(
-                    username,
+            instructorService.switchToInstructor(userDetails, new SwitchToInstructorRequestDto(
                     instructorAddressUpdateRequestDto.getAddressSido(),
                     instructorAddressUpdateRequestDto.getAddressSigungu(),
                     instructorAddressUpdateRequestDto.getAddressRoadName(),
@@ -196,51 +199,6 @@ class InstructorServiceTest {
     class 실패케이스 {
 
         @Test
-        @DisplayName("강사전환 실패 : 유저를 찾을 수 없습니다")
-        void 강사전환_실패() {
-            String username = "naheal";
-            // given
-            SwitchToInstructorRequestDto switchToInstructorRequestDto = new SwitchToInstructorRequestDto(
-                    username,
-                    "서울",
-                    "성복구",
-                    "서울숲길",
-                    "17번가"
-            );
-
-            // when
-            RestApiException restApiException = assertThrows(RestApiException.class, () -> {
-                instructorService.switchToInstructor(switchToInstructorRequestDto);
-            });
-
-            // then
-            assertEquals(restApiException.getErrorCode().getMessage(), ClientExceptionCode.CANT_FIND_USER.getMessage());
-        }
-
-
-        @Test
-        @DisplayName("강사전환 실패 : 이미 강사로 전환 완료")
-        void 강사전환_실패2() {
-            // given
-            SwitchToInstructorRequestDto switchToInstructorRequestDto = new SwitchToInstructorRequestDto(
-                    users.getUsername(),
-                    "서울",
-                    "성복구",
-                    "서울숲길",
-                    "17번가"
-            );
-
-            // when
-            instructorService.switchToInstructor(switchToInstructorRequestDto);
-            RestApiException restApiException = assertThrows(RestApiException.class, () -> {
-                instructorService.switchToInstructor(switchToInstructorRequestDto);
-            });
-
-            // then
-            assertEquals(restApiException.getErrorCode().getMessage(), ClientExceptionCode.USER_ALREADY_INSTRUCTOR.getMessage());
-        }
-
-        @Test
         @DisplayName("강사정보 조회 실패 : 유저를 찾을 수 없습니다")
         void 강사정보_조회_실패() {
             // given
@@ -269,8 +227,7 @@ class InstructorServiceTest {
                     "129-1 751빌딩 B2"
             );
 
-            instructorService.switchToInstructor(new SwitchToInstructorRequestDto(
-                    username,
+            instructorService.switchToInstructor(userDetails,new SwitchToInstructorRequestDto(
                     instructorAddressUpdateRequestDto.getAddressSido(),
                     instructorAddressUpdateRequestDto.getAddressSigungu(),
                     instructorAddressUpdateRequestDto.getAddressRoadName(),
