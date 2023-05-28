@@ -7,6 +7,7 @@ import com.fitnesspartner.dto.lessonMember.LessonMemberResponseDto;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.LessonMemberRepository;
+import com.fitnesspartner.repository.UserRolesRepository;
 import com.fitnesspartner.repository.UsersRepository;
 import com.fitnesspartner.security.authentication.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,6 +35,9 @@ class LessonMemberServiceTest {
 
     @Autowired
     UsersRepository usersRepository;
+
+    @MockBean
+    UserRolesRepository userRolesRepository;
 
     CustomUserDetails userDetails;
 

@@ -5,11 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static com.fitnesspartner.security.Roles.*;
+import static org.springframework.http.HttpMethod.*;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -26,20 +30,29 @@ public class SecurityFilterChainConfig {
                 .csrf().disable()
                 .formLogin().disable()
                 .authorizeHttpRequests(
-                        (auth) -> auth
+                        auth -> auth
                                 .antMatchers(HttpMethod.POST,
                                         "/users/signup",
                                         "/users/login")
                                 .permitAll()
+
+                                // Instructor
+                                .antMatchers("/lesson").hasAnyAuthority(INSTRUCTOR.getRoleName())
+                                .antMatchers(PUT, "/instructor/address").hasAnyAuthority(INSTRUCTOR.getRoleName())
+                                .antMatchers(POST, "/instructor/certificate").hasAnyAuthority(INSTRUCTOR.getRoleName())
+                                .antMatchers(GET, "/instructor/lessons").hasAnyAuthority(INSTRUCTOR.getRoleName())
+
+                                // Lesson Member
+                                .antMatchers(GET, "/lesson/member/**").hasAnyAuthority(LESSON_MEMBER.getRoleName())
+                                .antMatchers("/lesson/booking/**").hasAnyAuthority(LESSON_MEMBER.getRoleName())
+
                                 .anyRequest().authenticated()
                 )
-
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                    .authenticationProvider(authenticationProvider)
+                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
         return http.build();

@@ -1,13 +1,18 @@
 package com.fitnesspartner.security.authentication;
 
 import com.fitnesspartner.constants.UserState;
+import com.fitnesspartner.domain.UserRoles;
 import com.fitnesspartner.domain.Users;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Builder
 @AllArgsConstructor
@@ -21,7 +26,16 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        Optional<List<UserRoles>> userRoles = Optional.ofNullable(users.getUserRolesList());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        if(userRoles.isPresent()) {
+            for(UserRoles userRole : userRoles.get()) {
+                authorities.add(new SimpleGrantedAuthority(userRole.getRoleName()));
+            }
+        }
+
+        return authorities;
     }
 
     @Override

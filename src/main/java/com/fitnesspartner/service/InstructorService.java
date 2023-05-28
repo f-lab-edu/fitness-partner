@@ -9,6 +9,7 @@ import com.fitnesspartner.dto.instructor.*;
 import com.fitnesspartner.exception.ClientExceptionCode;
 import com.fitnesspartner.exception.RestApiException;
 import com.fitnesspartner.repository.InstructorRepository;
+import com.fitnesspartner.repository.UserRolesRepository;
 import com.fitnesspartner.repository.UsersRepository;
 import com.fitnesspartner.security.authentication.CustomUserDetails;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.fitnesspartner.security.Roles.INSTRUCTOR;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +32,31 @@ public class InstructorService {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public String switchToInstructor(SwitchToInstructorRequestDto switchToInstructorRequestDto) {
-        String username = switchToInstructorRequestDto.getUsername();
+    private final UserRolesRepository userRolesRepository;
 
-        Users users = findUserByUsername(username);
-        instructorExistsCheckByUsers(users);
+    public SwitchToInstructorResponseDto switchToInstructor(CustomUserDetails userDetails,
+                                                            SwitchToInstructorRequestDto switchToInstructorRequestDto) {
 
+        Users user = userDetails.getUsers();
+
+        Instructor instructor = instructorRepository.findByUsersAndInstructorState(user, InstructorState.Enabled)
+                .orElseGet(
+                        () -> saveInstructor(user, switchToInstructorRequestDto)
+                );
+
+        return SwitchToInstructorResponseDto.builder()
+                .instructorName(user.getName())
+                .instructorUsername(user.getUsername())
+                .addressSido(instructor.getAddressSido())
+                .addressSigungu(instructor.getAddressSigungu())
+                .addressRoadName(instructor.getAddressRoadName())
+                .addressDetails(instructor.getAddressDetails())
+                .build();
+    }
+
+    private Instructor saveInstructor(Users user, SwitchToInstructorRequestDto switchToInstructorRequestDto) {
         Instructor instructor = Instructor.builder()
-                .users(users)
+                .users(user)
                 .addressSido(switchToInstructorRequestDto.getAddressSido())
                 .addressSigungu(switchToInstructorRequestDto.getAddressSigungu())
                 .addressRoadName(switchToInstructorRequestDto.getAddressRoadName())
@@ -46,7 +66,14 @@ public class InstructorService {
 
         instructorRepository.save(instructor);
 
-        return "강사 전환이 완료되었습니다.";
+        UserRoles userRoles = UserRoles.builder()
+                .users(user)
+                .roleName(INSTRUCTOR.getRoleName())
+                .build();
+
+        userRolesRepository.save(userRoles);
+
+        return instructor;
     }
 
     public InstructorInfoResponseDto instructorInfo(String username) {
@@ -122,12 +149,6 @@ public class InstructorService {
                 .orElseThrow(
                         () -> new RestApiException(ClientExceptionCode.CANT_FIND_INSTRUCTOR)
                 );
-    }
-
-    private void instructorExistsCheckByUsers(Users users) {
-        if(instructorRepository.existsByUsers(users)) {
-            throw new RestApiException(ClientExceptionCode.USER_ALREADY_INSTRUCTOR);
-        }
     }
 
     private Users findUserByUsername(String username) {

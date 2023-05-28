@@ -23,10 +23,6 @@ public class LessonMember {
     @JoinColumn(name = "users_id", nullable = false)
     private Users users;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "lessonMember", fetch = FetchType.LAZY)
     private final List<LessonBooking> lessonBookingList = new ArrayList<>();
-
-    public void addLessonBookingList(LessonBooking lessonBooking) {
-        this.lessonBookingList.add(lessonBooking);
-    }
 }
